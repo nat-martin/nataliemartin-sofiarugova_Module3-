@@ -22,26 +22,27 @@ anole.log.tibble <- anole %>%
 
 #2 - Construct two linear models to assess effect of perch diameter and height 
 #Effect of perch diameter: 
-pd.lm <- lm(HTotal~SVL + ArbPD, data = anole.log.tibble)
+pd.lm <- lm(HTotal~SVL + ArbPD, anole.log.tibble)
 #Effect of perch height 
-ph.lm <- lm(HTotal~SVL + PH, data = anole.log.tibble)
+ph.lm <- lm(HTotal~SVL + PH, anole.log.tibble)
 
 #3 - Plotting the residuals of the linear models 
 #Mutating the tibble to include the residuals from both models 
 anole.log.tibble <- anole.log.tibble %>% 
-  mutate(residuals.pd = residuals(pd.lm), residuals.ph = residuals(ph.lm))
+  mutate(residuals.pd = residuals(pd.lm))
+
+anole.log.tibble <- anole.log.tibble %>% 
+  mutate(residuals.ph = residuals(ph.lm))
 
 #Plotting perch diameter residuals 
 ggplot(anole.log.tibble, aes(x=Ecomorph2, y=residuals.pd)) + 
   geom_boxplot() + 
-  stat_summary(fun=mean, geom="point", size=3) + 
-  labs(y= "Perch Diameter Residuals")
+  stat_summary(fun=mean, geom="point", size=3)
 
 #Plotting perch height residuals 
 ggplot(anole.log.tibble, aes(x=Ecomorph2, y=residuals.ph)) + 
   geom_boxplot() + 
-  stat_summary(fun=mean, geom="point", size=3) + 
-  labs(y= "Perch Height Residuals")
+  stat_summary(fun=mean, geom="point", size=3)
 
 #4 - Constructing phylogenetic least squares models
 anole.tree <- read.tree("anole.tre")
@@ -63,9 +64,9 @@ pgls.ph.pd <- gls(HTotal~SVL + PH + ArbPD,
                method = "ML")
 
 #5 - Assess the fit of the models using AICc and AICw
-PGLSmodassess <- MuMIn::AICc(pgls.ph, pgls.pd, pgls.ph.pd)
-aicw(PGLSmodassess$AICc)
-#When evaluting AIC scores, the lowest score is suggestive of the best model. 
+anole.phylo.aic <- MuMIn::AICc(pgls.ph, pgls.pd, pgls.ph.pd)
+aicw(anole.phylo.aic$AICc)
+#When evaluating AIC scores, the lowest score is suggestive of the best model. 
 #The lowest scoring model was the model that accounted for both perch height and perch diameter. 
 #This suggests that both of the covariates are significant predictors of hindlimb length in a phylogenetic context. 
 
