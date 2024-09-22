@@ -66,18 +66,14 @@ pgls.ph.pd <- gls(HTotal~SVL + PH + ArbPD,
 #5 - Assess the fit of the models using AICc and AICw
 anole.phylo.aic <- MuMIn::AICc(pgls.ph, pgls.pd, pgls.ph.pd)
 aicw(anole.phylo.aic$AICc)
-#When evaluating AIC scores, the lowest score is suggestive of the best model. 
-#The lowest scoring model was the model that accounted for both perch height and perch diameter. 
+#When evaluating AIC scores, the lowest fit score (AICc) or highest w score (AICw) is suggestive of the best model. 
+#The lowest fit and highest AICw scoring model was the model that accounted for both perch height and perch diameter. 
 #This suggests that both of the covariates are significant predictors of hindlimb length in a phylogenetic context. 
 
 #6 - Produce a plot that concisely visualizes the best fitting PGLS model
 anole.log.tibble <- anole.log.tibble %>% 
   mutate(residuals.hindlimb = residuals(pgls.ph.pd))
-anole.log.tibble %>% 
-  dplyr::select(Ecomorph2, residuals.pd, residuals.ph, residuals.hindlimb) %>% 
-  pivot_longer(cols=c("residuals.pd", "residuals.ph", "residuals.hindlimb")) %>%
-  ggplot(aes(x=Ecomorph2, y=value)) +
-  geom_boxplot()+
-  stat_summary(fun=mean, geom = "point", size=3)+
-  facet_grid(name~.,scales = "free_y")+
-  ylab("residual")
+
+anole.pglsHDgraph <- ggplot(anole.log.tibble) +
+  geom_point(aes(x = ArbPD + PH, y = residuals.hindlimb, color = Ecomorph2), size = 4) 
+anole.pglsHDgraph + scale_color_manual(values = c("#9f4bf5","#efa2df","#ff3568","#f4b52a","#2bd6ff","#3a3aff"))
